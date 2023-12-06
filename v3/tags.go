@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/dsoprea/go-logging"
+	log "github.com/dsoprea/go-logging"
 	"gopkg.in/yaml.v2"
 
-	"github.com/dsoprea/go-exif/v3/common"
+	exifcommon "github.com/dsoprea/go-exif/v3/common"
 )
 
 const (
@@ -229,19 +229,22 @@ func (ti *TagIndex) Add(it *IndexedTag) (err error) {
 
 	family[it.Id] = it
 
-	// Store by name.
+	// [dpb587] names can be duplicated
+	if false {
+		// Store by name.
 
-	familyR, found := ti.tagsByIfdR[it.IfdPath]
-	if found == false {
-		familyR = make(map[string]*IndexedTag)
-		ti.tagsByIfdR[it.IfdPath] = familyR
+		familyR, found := ti.tagsByIfdR[it.IfdPath]
+		if found == false {
+			familyR = make(map[string]*IndexedTag)
+			ti.tagsByIfdR[it.IfdPath] = familyR
+		}
+
+		if _, found := familyR[it.Name]; found == true {
+			log.Panicf("tag-name defined more than once for IFD [%s]: (%s)", it.IfdPath, it.Name)
+		}
+
+		familyR[it.Name] = it
 	}
-
-	if _, found := familyR[it.Name]; found == true {
-		log.Panicf("tag-name defined more than once for IFD [%s]: (%s)", it.IfdPath, it.Name)
-	}
-
-	familyR[it.Name] = it
 
 	return nil
 }
@@ -378,6 +381,7 @@ func (ti *TagIndex) FindFirst(id uint16, typeId exifcommon.TagTypePrimitive, ifd
 
 // GetWithName returns information about the non-IFD tag given a tag name.
 func (ti *TagIndex) GetWithName(ii *exifcommon.IfdIdentity, name string) (it *IndexedTag, err error) {
+	panic("found usage of GetWithName (avoiding duplicate names)")
 	defer func() {
 		if state := recover(); state != nil {
 			err = log.Wrap(state.(error))

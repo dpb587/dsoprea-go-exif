@@ -6,10 +6,10 @@ import (
 
 	"encoding/binary"
 
-	"github.com/dsoprea/go-logging"
+	log "github.com/dsoprea/go-logging"
 
-	"github.com/dsoprea/go-exif/v3/common"
-	"github.com/dsoprea/go-exif/v3/undefined"
+	exifcommon "github.com/dsoprea/go-exif/v3/common"
+	exifundefined "github.com/dsoprea/go-exif/v3/undefined"
 )
 
 var (
@@ -173,11 +173,11 @@ func (ite *IfdTagEntry) GetRawBytes() (rawBytes []byte, err error) {
 
 // Value returns the specific, parsed, typed value from the tag.
 func (ite *IfdTagEntry) Value() (value interface{}, err error) {
-	defer func() {
-		if state := recover(); state != nil {
-			err = log.Wrap(state.(error))
-		}
-	}()
+	// defer func() {
+	// 	if state := recover(); state != nil {
+	// 		err = log.Wrap(state.(error))
+	// 	}
+	// }()
 
 	valueContext := ite.getValueContext()
 

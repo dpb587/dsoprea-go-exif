@@ -11,10 +11,10 @@ import (
 
 	"encoding/binary"
 
-	"github.com/dsoprea/go-logging"
+	log "github.com/dsoprea/go-logging"
 
-	"github.com/dsoprea/go-exif/v3/common"
-	"github.com/dsoprea/go-exif/v3/undefined"
+	exifcommon "github.com/dsoprea/go-exif/v3/common"
+	exifundefined "github.com/dsoprea/go-exif/v3/undefined"
 )
 
 var (
@@ -231,20 +231,24 @@ func (ie *IfdEnumerate) parseTag(ii *exifcommon.IfdIdentity, tagPosition int, bp
 
 	// Check whether the embedded type indicator is valid.
 
-	if tagType.IsValid() == false {
-		// Technically, we have the type on-file in the tags-index, but
-		// if the type stored alongside the data disagrees with it,
-		// which it apparently does, all bets are off.
-		ifdEnumerateLogger.Warningf(nil,
-			"Tag (0x%04x) in IFD [%s] at position (%d) has invalid type (0x%04x) and will be skipped.",
-			tagId, ii, tagPosition, int(tagType))
+	// [dberger]: allow invalid type (e.g. Apple MakerNote 0x0017 of type 0x0010)
+	// [dberger]: breaks if disabled (scan: value of type [] is unparseable)
+	if true {
+		if tagType.IsValid() == false {
+			// Technically, we have the type on-file in the tags-index, but
+			// if the type stored alongside the data disagrees with it,
+			// which it apparently does, all bets are off.
+			ifdEnumerateLogger.Warningf(nil,
+				"Tag (0x%04x) in IFD [%s] at position (%d) has invalid type (0x%04x) and will be skipped.",
+				tagId, ii, tagPosition, int(tagType))
 
-		ite = &IfdTagEntry{
-			tagId:   tagId,
-			tagType: tagType,
+			ite = &IfdTagEntry{
+				tagId:   tagId,
+				tagType: tagType,
+			}
+
+			return ite, ErrTagTypeNotValid
 		}
-
-		return ite, ErrTagTypeNotValid
 	}
 
 	// Check whether the embedded type is listed among the supported types for
@@ -427,11 +431,11 @@ func (ie *IfdEnumerate) tagPostParse(ite *IfdTagEntry, med *MiscellaneousExifDat
 // parseIfd decodes the IFD block that we're currently sitting on the first
 // byte of.
 func (ie *IfdEnumerate) parseIfd(ii *exifcommon.IfdIdentity, bp *byteParser, visitor TagVisitorFn, doDescend bool, med *MiscellaneousExifData) (nextIfdOffset uint32, entries []*IfdTagEntry, thumbnailData []byte, err error) {
-	defer func() {
-		if state := recover(); state != nil {
-			err = log.Wrap(state.(error))
-		}
-	}()
+	// defer func() {
+	// 	if state := recover(); state != nil {
+	// 		err = log.Wrap(state.(error))
+	// 	}
+	// }()
 
 	tagCount, _, err := bp.getUint16()
 	log.PanicIf(err)
@@ -604,11 +608,11 @@ func (ie *IfdEnumerate) parseThumbnail(offsetIte, lengthIte *IfdTagEntry) (thumb
 // scan parses and enumerates the different IFD blocks and invokes a visitor
 // callback for each tag. No information is kept or returned.
 func (ie *IfdEnumerate) scan(iiGeneral *exifcommon.IfdIdentity, ifdOffset uint32, visitor TagVisitorFn, med *MiscellaneousExifData) (err error) {
-	defer func() {
-		if state := recover(); state != nil {
-			err = log.Wrap(state.(error))
-		}
-	}()
+	// defer func() {
+	// 	if state := recover(); state != nil {
+	// 		err = log.Wrap(state.(error))
+	// 	}
+	// }()
 
 	// TODO(dustin): Add test
 
@@ -666,11 +670,11 @@ type ScanOptions struct {
 // Scan enumerates the different EXIF blocks (called IFDs). `rootIfdName` will
 // be "IFD" in the TIFF standard.
 func (ie *IfdEnumerate) Scan(iiRoot *exifcommon.IfdIdentity, ifdOffset uint32, visitor TagVisitorFn, so *ScanOptions) (med *MiscellaneousExifData, err error) {
-	defer func() {
-		if state := recover(); state != nil {
-			err = log.Wrap(state.(error))
-		}
-	}()
+	// defer func() {
+	// 	if state := recover(); state != nil {
+	// 		err = log.Wrap(state.(error))
+	// 	}
+	// }()
 
 	// TODO(dustin): Add test
 

@@ -6,7 +6,7 @@ import (
 
 	"encoding/binary"
 
-	"github.com/dsoprea/go-logging"
+	log "github.com/dsoprea/go-logging"
 )
 
 var (
@@ -409,11 +409,11 @@ func (vc *ValueContext) ReadSignedRationals() (value []SignedRational, err error
 // byte-order, tag-ID, IFD type), it will return an error if attempted. See
 // `Undefined()`.
 func (vc *ValueContext) Values() (values interface{}, err error) {
-	defer func() {
-		if state := recover(); state != nil {
-			err = log.Wrap(state.(error))
-		}
-	}()
+	// defer func() {
+	// 	if state := recover(); state != nil {
+	// 		err = log.Wrap(state.(error))
+	// 	}
+	// }()
 
 	if vc.tagType == TypeByte {
 		values, err = vc.ReadBytes()
